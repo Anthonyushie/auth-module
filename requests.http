@@ -1,0 +1,82 @@
+### Variables
+@baseUrl = http://localhost:5000/api/auth
+@userEmail = user@example.com
+@adminEmail = admin@example.com
+@password = Password123!
+
+### 1. Health Check
+GET http://localhost:5000/health
+
+### 2. Register Regular User
+# @name registerUser
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{password}}",
+  "role": "user"
+}
+
+### 3. Register Admin User
+# @name registerAdmin
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}",
+  "role": "admin"
+}
+
+### 4. Login as User (Receives Access Token & HTTP-Only Refresh Cookie)
+# @name loginUser
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{password}}"
+}
+
+### Store User Access Token from Login Response
+@userAccessToken = {{loginUser.response.body.data.accessToken}}
+
+### 5. Login as Admin
+# @name loginAdmin
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+### Store Admin Access Token
+@adminAccessToken = {{loginAdmin.response.body.data.accessToken}}
+
+### 6. Access Profile (Protected Route - User Token)
+GET {{baseUrl}}/profile
+Authorization: Bearer {{userAccessToken}}
+
+### 7. Access Admin Dashboard as User (Expected: 403 Forbidden)
+GET {{baseUrl}}/admin-dashboard
+Authorization: Bearer {{userAccessToken}}
+
+### 8. Access Admin Dashboard as Admin (Expected: 200 OK)
+GET {{baseUrl}}/admin-dashboard
+Authorization: Bearer {{adminAccessToken}}
+
+### 9. Refresh Token Rotation (Uses HTTP-Only Cookie automatically)
+# @name refreshToken
+POST {{baseUrl}}/refresh
+
+### Store New Access Token
+@newAccessToken = {{refreshToken.response.body.data.accessToken}}
+
+### 10. Access Profile with New Rotated Access Token
+GET {{baseUrl}}/profile
+Authorization: Bearer {{newAccessToken}}
+
+### 11. Logout
+POST {{baseUrl}}/logout
