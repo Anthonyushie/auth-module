@@ -69,15 +69,20 @@ export const verifyRefreshToken = (token: string): RefreshTokenPayload => {
  * Security rationale:
  * 1. httpOnly: true -> Inaccessible to JavaScript (document.cookie), mitigating XSS token theft.
  * 2. secure: true (in prod) -> Ensures cookie is only transmitted over encrypted HTTPS connections.
- * 3. sameSite: 'strict' (or 'lax') -> Protects against Cross-Site Request Forgery (CSRF).
+ * 3. sameSite: 'none' (in prod) -> Required for cross-origin cookies when the front-end (Next.js)
+ *    and back-end (Express) are deployed on separate domains. Combined with `secure: true`,
+ *    the cookie is still protected against CSRF via the HTTPS-only constraint.
+ *    In development, 'lax' is used since both run on localhost.
  * 4. maxAge -> Explicit lifetime matching the refresh token validity.
  * 5. path: '/api/auth' -> Restricts cookie dispatch only to authentication endpoints.
  */
 export const getRefreshTokenCookieOptions = (): CookieOptions => {
+  const isProduction = env.NODE_ENV === 'production';
+
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: env.REFRESH_TOKEN_COOKIE_MAX_AGE,
     path: '/api/auth', // Scopes cookie only to auth endpoints to minimize unnecessary transmission
   };

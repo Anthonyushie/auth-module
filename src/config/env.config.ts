@@ -7,7 +7,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 interface EnvConfig {
   PORT: number;
   NODE_ENV: 'development' | 'production' | 'test';
-  CLIENT_ORIGIN: string;
+  CLIENT_URL: string;
   DATABASE_URL: string;
   JWT_ACCESS_SECRET: string;
   JWT_REFRESH_SECRET: string;
@@ -28,7 +28,7 @@ const getEnvOrThrow = (key: string, defaultValue?: string): string => {
 export const env: EnvConfig = {
   PORT: parseInt(process.env.PORT || '5000', 10),
   NODE_ENV: (process.env.NODE_ENV as EnvConfig['NODE_ENV']) || 'development',
-  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
   DATABASE_URL: getEnvOrThrow('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/auth_db?schema=public'),
   JWT_ACCESS_SECRET: getEnvOrThrow('JWT_ACCESS_SECRET', 'default-dev-access-secret-replace-in-prod'),
   JWT_REFRESH_SECRET: getEnvOrThrow('JWT_REFRESH_SECRET', 'default-dev-refresh-secret-replace-in-prod'),

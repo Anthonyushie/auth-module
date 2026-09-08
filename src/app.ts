@@ -13,7 +13,7 @@ app.use(helmet());
 // 2. CORS configuration with cookie credentials enabled
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN,
+    origin: env.CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
