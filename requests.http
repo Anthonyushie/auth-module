@@ -1,5 +1,6 @@
 ### Variables
 @baseUrl = http://localhost:5000/api/auth
+@tasksUrl = http://localhost:5000/api/tasks
 @userEmail = user@example.com
 @adminEmail = admin@example.com
 @password = Password123!
@@ -78,5 +79,36 @@ POST {{baseUrl}}/refresh
 GET {{baseUrl}}/profile
 Authorization: Bearer {{newAccessToken}}
 
-### 11. Logout
+### 11. Create a Task (Protected - Uses user access token)
+# @name createTask
+POST {{tasksUrl}}
+Authorization: Bearer {{userAccessToken}}
+Content-Type: application/json
+
+{
+  "title": "Build a secure REST API with TypeScript"
+}
+
+### Store Created Task ID
+@taskId = {{createTask.response.body.data.id}}
+
+### 12. Get All Tasks for Authenticated User
+GET {{tasksUrl}}
+Authorization: Bearer {{userAccessToken}}
+
+### 13. Update Task (Toggle completed and edit title)
+PUT {{tasksUrl}}/{{taskId}}
+Authorization: Bearer {{userAccessToken}}
+Content-Type: application/json
+
+{
+  "title": "Build a secure REST API with TypeScript (Completed!)",
+  "completed": true
+}
+
+### 14. Delete Task
+DELETE {{tasksUrl}}/{{taskId}}
+Authorization: Bearer {{userAccessToken}}
+
+### 15. Logout
 POST {{baseUrl}}/logout
