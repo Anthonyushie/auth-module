@@ -23,7 +23,6 @@ export interface TokenPair {
 export interface RegisterDto {
   email: string;
   password: string;
-  role?: Role;
 }
 
 export interface LoginDto {

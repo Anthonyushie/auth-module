@@ -22,7 +22,7 @@ export class AuthController {
    */
   public register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password, role }: RegisterDto = req.body;
+      const { email, password }: RegisterDto = req.body;
 
       // 1. Validate payload presence
       if (!email || !password) {
@@ -68,8 +68,9 @@ export class AuthController {
       // 5. Hash password with bcrypt
       const passwordHash = await bcrypt.hash(password, env.BCRYPT_SALT_ROUNDS);
 
-      // 6. Assign valid role (default: 'user')
-      const assignedRole: Role = role === 'admin' ? 'admin' : 'user';
+      // 6. Self-registration ALWAYS assigns 'user' role.
+      //    Admin accounts can only be created by existing admins.
+      const assignedRole: Role = 'user';
 
       // 7. Persist user to database
       const newUser = await prisma.user.create({
