@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { authController } from '../controllers/auth.controller';
+import { userController } from '../controllers/user.controller';
 import { requireAuth, requireRole } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -73,5 +74,30 @@ router.get('/admin-dashboard', requireAuth, requireRole(['admin']), (req: Reques
     },
   });
 });
+
+// ==========================================
+// Admin User Management Routes
+// ==========================================
+
+/**
+ * @route   GET /api/auth/users
+ * @desc    Get all users
+ * @access  Protected (Admin only)
+ */
+router.get('/users', requireAuth, requireRole(['admin']), userController.getAllUsers);
+
+/**
+ * @route   PUT /api/auth/users/:id/role
+ * @desc    Update a user's role
+ * @access  Protected (Admin only)
+ */
+router.put('/users/:id/role', requireAuth, requireRole(['admin']), userController.updateUserRole);
+
+/**
+ * @route   DELETE /api/auth/users/:id
+ * @desc    Delete a user
+ * @access  Protected (Admin only)
+ */
+router.delete('/users/:id', requireAuth, requireRole(['admin']), userController.deleteUser);
 
 export default router;
