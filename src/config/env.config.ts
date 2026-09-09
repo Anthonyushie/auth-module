@@ -28,7 +28,7 @@ const getEnvOrThrow = (key: string, defaultValue?: string): string => {
 export const env: EnvConfig = {
   PORT: parseInt(process.env.PORT || '5000', 10),
   NODE_ENV: (process.env.NODE_ENV as EnvConfig['NODE_ENV']) || 'development',
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
+  CLIENT_URL: (process.env.CLIENT_URL || 'http://localhost:3000').trim().replace(/\/+$/, ''),
   DATABASE_URL: getEnvOrThrow('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/auth_db?schema=public'),
   JWT_ACCESS_SECRET: getEnvOrThrow('JWT_ACCESS_SECRET', 'default-dev-access-secret-replace-in-prod'),
   JWT_REFRESH_SECRET: getEnvOrThrow('JWT_REFRESH_SECRET', 'default-dev-refresh-secret-replace-in-prod'),

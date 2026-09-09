@@ -8,6 +8,9 @@ import taskRoutes from './routes/task.routes';
 
 const app: Application = express();
 
+// Trust reverse proxy headers (Required on Render/Heroku for HTTPS and secure cookies)
+app.set('trust proxy', 1);
+
 // 1. Security Headers via Helmet
 app.use(helmet());
 
