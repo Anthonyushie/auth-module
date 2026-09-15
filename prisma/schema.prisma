@@ -14,30 +14,73 @@ enum Role {
   user
 }
 
+enum ArticleStatus {
+  Draft
+  Published
+}
+
+enum SubscriptionStatus {
+  Pending
+  Active
+  Cancelled
+  Expired
+}
+
 model User {
   id            String         @id @default(uuid())
   email         String         @unique
   passwordHash  String         @map("password_hash")
   role          Role           @default(user)
   refreshTokens RefreshToken[]
-  tasks         Task[]
+  articles      Article[]
+  subscription  Subscription?
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
-model Task {
-  id        String   @id @default(uuid())
-  title     String
-  completed Boolean  @default(false)
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model Article {
+  id           String        @id @default(uuid())
+  title        String
+  slug         String        @unique
+  body         String        @db.Text
+  coverImageUrl String?      @map("cover_image_url")
+  status       ArticleStatus @default(Draft)
+  authorId     String        @map("author_id")
+  author       User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
-  @@index([userId])
-  @@map("tasks")
+  @@index([status, createdAt])
+  @@map("articles")
+}
+
+model Subscription {
+  id                String             @id @default(uuid())
+  userId            String             @unique @map("user_id")
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flwPlanId         Int                @default(243392) @map("flw_plan_id")
+  flwSubscriptionId Int?               @map("flw_subscription_id")
+  txRef             String             @unique @map("tx_ref")
+  status            SubscriptionStatus @default(Pending)
+  currentPeriodEnd  DateTime?          @map("current_period_end")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}
+
+model PaymentEvent {
+  id        String   @id @default(uuid())
+  txRef     String?  @map("tx_ref")
+  flwTxId   String?  @map("flw_tx_id")
+  event     String
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([txRef])
+  @@map("payment_events")
 }
 
 model RefreshToken {

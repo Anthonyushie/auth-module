@@ -1,6 +1,7 @@
 ### Variables
 @baseUrl = http://localhost:5000/api/auth
-@tasksUrl = http://localhost:5000/api/tasks
+@articlesUrl = http://localhost:5000/api/articles
+@paymentsUrl = http://localhost:5000/api/payments
 @userEmail = user@example.com
 @adminEmail = admin@example.com
 @password = Password123!
@@ -79,36 +80,65 @@ POST {{baseUrl}}/refresh
 GET {{baseUrl}}/profile
 Authorization: Bearer {{newAccessToken}}
 
-### 11. Create a Task (Protected - Uses user access token)
-# @name createTask
-POST {{tasksUrl}}
+### 11. List Articles as User (titles/metadata only, no body)
+GET {{articlesUrl}}?status=published
+Authorization: Bearer {{userAccessToken}}
+
+### 12. Read Article Detail as User without Sub (Expected: 402 PAYMENT_REQUIRED)
+GET {{articlesUrl}}/some-article-slug
+Authorization: Bearer {{userAccessToken}}
+
+### 13. Create Article as Admin (Expected: 201)
+# @name createArticle
+POST {{articlesUrl}}
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "title": "Why Subscriptions Beat One-Off Sales",
+  "body": "This is a long-form article body with at least fifty characters to pass validation. Medium-style paid content lives here.",
+  "status": "Published"
+}
+
+### Store Created Article ID + Slug
+@articleId = {{createArticle.response.body.data.id}}
+@articleSlug = {{createArticle.response.body.data.slug}}
+
+### 14. Create Article as User (Expected: 403)
+POST {{articlesUrl}}
 Authorization: Bearer {{userAccessToken}}
 Content-Type: application/json
 
 {
-  "title": "Build a secure REST API with TypeScript"
+  "title": "Should Fail",
+  "body": "This body is long enough to pass validation but the role check must reject it with 403 Forbidden."
 }
 
-### Store Created Task ID
-@taskId = {{createTask.response.body.data.id}}
-
-### 12. Get All Tasks for Authenticated User
-GET {{tasksUrl}}
-Authorization: Bearer {{userAccessToken}}
-
-### 13. Update Task (Toggle completed and edit title)
-PUT {{tasksUrl}}/{{taskId}}
-Authorization: Bearer {{userAccessToken}}
+### 15. Update Article as Admin
+PUT {{articlesUrl}}/{{articleId}}
+Authorization: Bearer {{adminAccessToken}}
 Content-Type: application/json
 
 {
-  "title": "Build a secure REST API with TypeScript (Completed!)",
-  "completed": true
+  "title": "Why Subscriptions Beat One-Off Sales (Updated)"
 }
 
-### 14. Delete Task
-DELETE {{tasksUrl}}/{{taskId}}
+### 16. Start Checkout as User (returns Flutterwave paymentLink)
+# @name checkout
+POST {{paymentsUrl}}/checkout
 Authorization: Bearer {{userAccessToken}}
 
-### 15. Logout
+### 17. Check Subscription Status
+GET {{paymentsUrl}}/status
+Authorization: Bearer {{userAccessToken}}
+
+### 18. Verify Payment after Flutterwave redirect (fill ids from callback)
+GET {{paymentsUrl}}/verify?transaction_id=1234567890&tx_ref={{checkout.response.body.data.txRef}}
+Authorization: Bearer {{userAccessToken}}
+
+### 19. Delete Article as Admin
+DELETE {{articlesUrl}}/{{articleId}}
+Authorization: Bearer {{adminAccessToken}}
+
+### 20. Logout
 POST {{baseUrl}}/logout

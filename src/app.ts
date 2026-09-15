@@ -4,7 +4,8 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env.config';
 import authRoutes from './routes/auth.routes';
-import taskRoutes from './routes/task.routes';
+import articleRoutes from './routes/article.routes';
+import paymentRoutes from './routes/payment.routes';
 
 const app: Application = express();
 
@@ -39,10 +40,13 @@ app.get('/health', (req: Request, res: Response) => {
 // 6. Mount Auth Routes
 app.use('/api/auth', authRoutes);
 
-// 7. Mount Task Routes
-app.use('/api/tasks', taskRoutes);
+// 7. Mount Article Routes (Medium-style gated content)
+app.use('/api/articles', articleRoutes);
 
-// 8. 404 Handler
+// 8. Mount Payment Routes (Flutterwave subscriptions)
+app.use('/api/payments', paymentRoutes);
+
+// 9. 404 Handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     success: false,
@@ -50,7 +54,7 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// 9. Global Centralized Error Handler
+// 10. Global Centralized Error Handler
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error('[Unhandled Error]:', err);
 
